@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Points = require("../models/Points");
+const Points = require("../models/points");
 const account = new Points();
 
 // Return all payer point balances
@@ -28,11 +28,11 @@ router.post("/transaction", async (req, res, next) => {
 // Spend points
 router.put("/spend", async (req, res, next) => {
   const { points } = req.body;
-  const spent = account.spendPoints(points);
-  if (spent) {
-    res.json(spent);
+  if (!points) {
+    res.status(400).json({ error: "points is required" });
   } else {
-    res.status(400).send("Not enough points");
+    const spent = account.spendPoints(points);
+    res.status(200).json(spent);
   }
 });
 

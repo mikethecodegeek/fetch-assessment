@@ -8,7 +8,7 @@ let should = chai.should();
 
 chai.use(chaiHttp);
 
-const Points = require('../models/Points');
+const Points = require('../models/points');
 
 describe('addTransaction(transaction)', () => {
     it('it should return an error if no transaction is provided', (done) => {

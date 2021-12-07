@@ -52,7 +52,6 @@ module.exports = class Points {
     if (this.totalPoints < points) {
       return { error: "Not enough points" };
     } else {
-
       // sort the transactions by timestamp so that we can
       // spend points in the correct order
       let sortedTransactions = [...this.transactions].sort((a, b) => {
@@ -71,7 +70,6 @@ module.exports = class Points {
         if (transaction.points < 0) {
           continue;
         } else if (spentPointsSum + transaction.points <= points) {
-
           // map transaction to spent points
           currentSpend = spendingObject[transaction.payer].shift();
           spentPoints.push({
@@ -85,6 +83,8 @@ module.exports = class Points {
             timestamp: transaction.timestamp,
           });
         } else {
+          // if transaction has more points than we need to spend
+          // take the difference and add to spent points
           currentSpend = points - spentPointsSum;
           spentPoints.push({
             payer: transaction.payer,
