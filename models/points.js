@@ -14,10 +14,11 @@ module.exports = class Points {
       if (this.balance[transaction.payer] === undefined) {
         return;
       }
+      // make sure we don't go below 0
       if (this.totalPoints + transaction.points < 0) {
         transaction.points = this.totalPoints;
       }
-    }
+    } 
 
     this.totalPoints += transaction.points;
 

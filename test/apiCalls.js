@@ -69,6 +69,36 @@ describe('/POST api/transaction', () => {
             done();
           });
     });
+  
+});
+
+describe('/PUT api/spend', () => {
+  it('it should spend points if we have them available', (done) => {
+    chai.request(server)
+        .put('/api/spend')
+        .send({"points": 500})
+        .end((err, res) => {
+              res.should.have.status(200);
+              console.log(res.body);
+              res.body.should.be.a('array');
+              res.body.should.eql( [{"payer":"DANNON","points": -500}])
+          done();
+        });
+  });
+  it('it should return an error if we dont have enough points', (done) => {
+    chai.request(server)
+        .put('/api/spend')
+        .send({"points": 600})
+        .end((err, res) => {
+              res.should.have.status(200);
+              console.log(res.body);
+              res.body.should.be.a('object');
+              res.body.should.eql( {"error": "Not enough points"})
+          done();
+        });
+  });
+
+ 
 });
 
 
