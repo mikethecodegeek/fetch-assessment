@@ -2,13 +2,11 @@ Fetch Rewards Coding Exercise - Backend Software Engineering
 
 Background
 
-Our users have points in their accounts. Users only see a single balance in their accounts. But for reporting purposes we actually track their
-points per payer/partner. 
+Our users have points in their accounts. Users only see a single balance in their accounts. But for reporting purposes we actually track their points per payer/partner. 
 
 In our system, each transaction record contains: payer (string), points (integer), timestamp (date).
 
-For earning points it is easy to assign a payer, we know which actions earned the points. And thus which partner should be paying for the points.
-When a user spends points, they don't know or care which payer the points come from. But, our accounting team does care how the points are
+For earning points it is easy to assign a payer, we know which actions earned the points. And thus which partner should be paying for the points. When a user spends points, they don't know or care which payer the points come from. But, our accounting team does care how the points are
 spent. 
 
 There are two rules for determining what points to "spend" first:
@@ -20,11 +18,37 @@ There are two rules for determining what points to "spend" first:
 Installation Instructions
 -----------------------------
 
+From the terminal type the following:
 
-install: npm install
-run: npm run
-test: npm test
-port: 3000
+git clone https://github.com/mikethecodegeek/fetch-assessment
+cd fetch-assessment
+npm install
+
+The API is now ready to run locally on your machine!
+
+To start the server please run the following from the terminal
+
+npm start
+
+That's it! The server should be up and running. By default it will be 
+listening on port 3000
+
+all requests to the API should be pointed to
+localhost:3000/api/
+
+
+--------------------------------
+TESTING
+--------------------------------
+
+I've included some unit tests using the Mocha testing framework and the Chai assertion library. 
+
+To run tests type the following in the terminal
+
+npm test
+
+Note: test files are found in the test directory
+
 
 ------------------------------
 API Endpoints
