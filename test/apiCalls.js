@@ -9,12 +9,13 @@ let should = chai.should();
 chai.use(chaiHttp);
 
 describe('/GET api/balance', () => {
-    it('it should return 0 if there is no transactions', (done) => {
+    it('it should return an empty object if there is no transactions', (done) => {
       chai.request(server)
           .get('/api/balance')
           .end((err, res) => {
                 res.should.have.status(200);
-                res.body.should.eql(0);
+                res.body.should.be.a('object');
+                res.body.should.be.eql({});
             done();
           });
     });

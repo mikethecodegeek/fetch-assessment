@@ -1,60 +1,120 @@
 module.exports = class Points {
-    constructor() {
-      this.points = 0;
-      this.transactions = [];
-    }
-  
-    addPoints(points) {
-      this.points += points;
-    }
-  
-    spendPoints(points) {
-      if (this.points < points) {
-        return false;
-      } else {
-        let sortedTransactions = [...this.transactions].sort((a, b) => {
-          return a.timestamp - b.timestamp;
-        });
+  constructor() {
+    this.totalPoints = 0;
+    this.transactions = [];
+    this.balance = {};
+  }
 
-        let spentPoints = [];
-        let spentPointsSum = 0;
+  getTotalPoints() {
+    return this.totalPoints;
+  }
 
-        for (let i = 0; i < sortedTransactions.length; i++) {
-          if (spentPointsSum === points) {
-            break;
-          } else if (sortedTransactions[i].points < 0) {
-            break;
-          }
-          else if (spentPointsSum + sortedTransactions[i].points <= points) {
-            spentPoints.push({
-              payer: sortedTransactions[i].payer,
-              points: 0-sortedTransactions[i].points,
-              timestamp: sortedTransactions[i].timestamp
-            });
-            spentPointsSum += sortedTransactions[i].points;
+  addPoints(transaction) {
+    if (transaction.points < 0) {
+      if (this.balance[transaction.payer] === undefined) {
+        return;
+      }
+      if (this.totalPoints + transaction.points < 0) {
+        transaction.points = this.totalPoints;
+      }
+    }
+
+    this.totalPoints += transaction.points;
+
+    // if payer already exists then add points to balance
+    // else create new entry in balance
+    this.balance[transaction.payer] = this.balance[transaction.payer]
+      ? this.balance[transaction.payer] + transaction.points
+      : transaction.points;
+  }
+
+  createSpendingObject(sortedTransactions) {
+    let spendingObject = {};
+    sortedTransactions.forEach(transaction => {
+      // create a new array if payer does not exist
+        if (spendingObject[transaction.payer] === undefined) {
+          spendingObject[transaction.payer] = [transaction.points];
+        } else {
+          // add points to existing array if transaction is positive
+          if (transaction.points > 0) {
+            spendingObject[transaction.payer].push(transaction.points);
           } else {
-            spentPoints.push({
-              payer: sortedTransactions[i].payer,
-              points: 0 - (points - spentPointsSum),
-              timestamp: sortedTransactions[i].timestamp
-            });
-            spentPointsSum = points
+            // if transaction is negative we need to remove points from the
+            // previous transaction rather than add new one
+            spendingObject[transaction.payer][spendingObject[transaction.payer].length - 1] += transaction.points;
           }
         }
-        this.points -= points;
-        return spentPoints;
-      }
-  
-    }
-  
-    getBalance() {
-      return this.transactions;
-    }
-  
-    addTransaction(transaction) {
-      this.transactions.push(transaction);
-      this.addPoints(transaction.points);
-    }
-  
+    });
+    return spendingObject;
   }
-  
+
+  spendPoints(points) {
+    if (this.totalPoints < points) {
+      return { error: "Not enough points" };
+    } else {
+
+      // sort the transactions by timestamp so that we can
+      // spend points in the correct order
+      let sortedTransactions = [...this.transactions].sort((a, b) => {
+        return a.timestamp.localeCompare(b.timestamp);
+      });
+
+      let spentPoints = [];
+      let spentPointsSum = 0;
+      let currentSpend = 0;
+
+      // spending object is a map of points in order by date
+      let spendingObject = this.createSpendingObject(sortedTransactions);
+
+      while (spentPointsSum < points) {
+        let transaction = sortedTransactions.shift();
+        if (transaction.points < 0) {
+          continue;
+        } else if (spentPointsSum + transaction.points <= points) {
+
+          // map transaction to spent points
+          currentSpend = spendingObject[transaction.payer].shift();
+          spentPoints.push({
+            payer: transaction.payer,
+            points: 0 - currentSpend,
+          });
+          spentPointsSum += currentSpend;
+          this.addTransaction({
+            payer: transaction.payer,
+            points: 0 - currentSpend,
+            timestamp: transaction.timestamp,
+          });
+        } else {
+          currentSpend = points - spentPointsSum;
+          spentPoints.push({
+            payer: transaction.payer,
+            points: 0 - currentSpend,
+          });
+          spentPointsSum += currentSpend;
+          this.addTransaction({
+            payer: transaction.payer,
+            points: 0 - currentSpend,
+            timestamp: transaction.timestamp,
+          });
+        }
+      }
+      return spentPoints;
+    }
+  }
+
+  getBalance() {
+    return this.balance;
+  }
+
+  addTransaction(transaction) {
+    if (!transaction) {
+      return { error: "No transaction provided" };
+    }
+    this.transactions.push(transaction);
+    this.addPoints(transaction);
+  }
+
+  getTransactions() {
+    return this.transactions;
+  }
+};
