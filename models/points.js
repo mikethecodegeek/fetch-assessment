@@ -41,7 +41,8 @@ module.exports = class Points {
           } else {
             // if transaction is negative we need to remove points from the
             // previous transaction rather than add new one
-            spendingObject[transaction.payer][spendingObject[transaction.payer].length - 1] += transaction.points;
+            let lastTransaction = spendingObject[transaction.payer].length - 1;
+            spendingObject[transaction.payer][lastTransaction] += transaction.points;
           }
         }
     });
@@ -70,22 +71,15 @@ module.exports = class Points {
         if (transaction.points < 0) {
           continue;
         } else if (spentPointsSum + transaction.points <= points) {
-          // map transaction to spent points
+          // if transaction is less than or equal to points left
+          // add transaction to spent points
           currentSpend = spendingObject[transaction.payer].shift();
-          spentPoints.push({
-            payer: transaction.payer,
-            points: 0 - currentSpend,
-          });
-          spentPointsSum += currentSpend;
-          this.addTransaction({
-            payer: transaction.payer,
-            points: 0 - currentSpend,
-            timestamp: transaction.timestamp,
-          });
+        
         } else {
           // if transaction has more points than we need to spend
           // take the difference and add to spent points
           currentSpend = points - spentPointsSum;
+        }
           spentPoints.push({
             payer: transaction.payer,
             points: 0 - currentSpend,
@@ -96,7 +90,6 @@ module.exports = class Points {
             points: 0 - currentSpend,
             timestamp: transaction.timestamp,
           });
-        }
       }
       return spentPoints;
     }
